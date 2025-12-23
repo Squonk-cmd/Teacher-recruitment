@@ -64,4 +64,46 @@ app.post('/api/apply', upload.single('cv'), async (req, res) => {
     }
 });
 
+
+// Get all applicants for Admin
+app.get('/api/applicants', async (req, res) => {
+  try {
+    // We fetch everything. PostgreSQL returns an object with a 'rows' property.
+    const result = await pool.query('SELECT * FROM applicants ORDER BY id DESC');
+    res.json(result.rows); // <--- Make sure you are sending result.rows, not just result
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Update payment status only
+app.patch('/api/applicants/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { paymentStatus } = req.body;
+    try {
+        await pool.query('UPDATE applicants SET payment_status = $1 WHERE id = $2', [paymentStatus, id]);
+        res.json({ message: "Status updated" });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Update full applicant data
+app.put('/api/applicants/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, phone, email, applyFor, selectedSubject, lastDegree } = req.body;
+    try {
+        await pool.query(
+            `UPDATE applicants 
+             SET name=$1, phone=$2, email=$3, apply_for=$4, selected_subject=$5, last_degree=$6 
+             WHERE id=$7`,
+            [name, phone, email, applyFor, selectedSubject, lastDegree, id]
+        );
+        res.json({ message: "Updated successfully" });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.listen(5000, () => console.log('Server running on http://localhost:5000'));

@@ -25,15 +25,16 @@ const AdminPanel: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [subjectFilter, setSubjectFilter] = useState<string>('All');
+  const [editingApplicant, setEditingApplicant] = useState<Applicant | null>(null);
   
   // Edit State
-  const [editingApplicant, setEditingApplicant] = useState<Applicant | null>(null);
+  
 
   useEffect(() => {
-    if (isAuthenticated) {
-      setApplicants(getApplicants());
-    }
-  }, [isAuthenticated]);
+  if (isAuthenticated) {
+    refreshData();
+  }
+}, [isAuthenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,33 +45,69 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const refreshData = () => setApplicants(getApplicants());
+  // 1. Fetch Real Data from PostgreSQL
+  const refreshData = async () => {
+  console.log("FETCH START: Requesting data from server...");
+  try {
+    const response = await fetch('http://localhost:5000/api/applicants');
+    const rawData = await response.json();
+    
+    console.log("RAW DATA FROM DB:", rawData);
 
-  const handleStatusUpdate = (id: string, status: Applicant['paymentStatus']) => {
-    updateApplicantStatus(id, status);
-    refreshData();
-  };
+    const formattedData = rawData.map((row: any) => ({
+      ...row,
+      // Map both styles (snake and camel) just to be 100% safe for the UI
+      id: (row.id || row.serial)?.toString(),
+      name: row.name || "No Name",
+      phone: row.phone || "No Phone",
+      applyFor: row.apply_for || row.applyFor || "N/A",
+      selectedSubject: row.selected_subject || row.selectedSubject || "N/A",
+      paymentStatus: row.payment_status || row.paymentStatus || "Pending",
+      serial: row.serial || 0
+    }));
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingApplicant) {
-      updateApplicantData(editingApplicant.id, editingApplicant);
-      setEditingApplicant(null);
-      refreshData();
+    setApplicants(formattedData);
+  } catch (error) {
+    console.error("FETCH ERROR:", error);
+  }
+};
+
+  // 2. Handle Status Update (Payment)
+  const handleStatusUpdate = async (id: string | number, status: string) => {
+    try {
+      await fetch(`http://localhost:5000/api/applicants/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus: status })
+      });
+      refreshData(); // Reload list after update
+    } catch (error) {
+      alert("Failed to update status");
     }
   };
 
-  const filteredApplicants = applicants.filter(a => {
-    const matchesSearch = 
-      a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.phone.includes(searchTerm) ||
-      a.nid.includes(searchTerm);
-    
-    const matchesRole = roleFilter === 'All' || a.applyFor === roleFilter;
-    const matchesSubject = subjectFilter === 'All' || a.selectedSubject === subjectFilter;
+  // 3. Handle Save Edits
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingApplicant) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/applicants/${editingApplicant.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editingApplicant)
+        });
+        
+        if (response.ok) {
+          setEditingApplicant(null);
+          refreshData();
+        }
+      } catch (error) {
+        alert("Error updating applicant data");
+      }
+    }
+  };
 
-    return matchesSearch && matchesRole && matchesSubject;
-  });
+  const filteredApplicants = applicants;
 
   if (!isAuthenticated) {
     return (
@@ -201,6 +238,7 @@ const AdminPanel: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
+                
                   {filteredApplicants.map((a) => (
                     <tr key={a.id} className="group hover:bg-gray-50/50 transition-colors">
                       <td className="px-8 py-6">

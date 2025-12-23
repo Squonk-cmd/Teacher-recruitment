@@ -12,8 +12,17 @@ interface PaymentOptionsProps {
 const PaymentOptions: React.FC<PaymentOptionsProps> = ({ applicant }) => {
   const [paymentDone, setPaymentDone] = useState(false);
 
-  // Determine fee based on position
-  const fee = APP_CONFIG.fees[applicant.applyFor as keyof typeof APP_CONFIG.fees] || 0;
+  // 1. Clean the string (remove spaces and ensure case matches constants)
+  const positionKey = applicant.applyFor?.trim();
+  
+  // 2. Lookup the fee with a fallback to 0
+  const fee = APP_CONFIG.fees[positionKey as keyof typeof APP_CONFIG.fees] || 0;
+
+  // Debugging: If fee is 0, check your console to see what the string looks like
+  if (fee === 0) {
+    console.warn("Fee lookup failed for position:", `"${positionKey}"`);
+    console.log("Available keys in CONFIG:", Object.keys(APP_CONFIG.fees));
+  }
 
   const handlePaymentClick = () => {
     // Open payment link in new window

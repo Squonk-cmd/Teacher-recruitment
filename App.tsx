@@ -42,12 +42,32 @@ const App: React.FC = () => {
     window.location.hash = 'application';
   };
 
-  // This 'applicant' now comes from the database response (via ApplicationForm)
-  const handleFormSubmit = (applicant: Applicant) => {
-    console.log("Applicant saved to DB:", applicant);
-    setCurrentApplicant(applicant); 
-    window.location.hash = 'payment';
+  // 1. The Submit Handler: Just update the state
+const handleFormSubmit = (dataFromDb: any) => {
+  // Map snake_case to camelCase immediately
+  const formatted = {
+    ...dataFromDb,
+    id: dataFromDb.id,
+    applyFor: dataFromDb.apply_for || dataFromDb.applyFor,
+    selectedSubject: dataFromDb.selected_subject || dataFromDb.selectedSubject,
+    paymentStatus: dataFromDb.payment_status || dataFromDb.paymentStatus,
   };
+
+  console.log("Setting Applicant state...", formatted);
+  setCurrentApplicant(formatted);
+  // DO NOT set window.location.hash here.
+};
+
+// 2. The Navigation Effect: Watch for the state change
+useEffect(() => {
+  // If we have an applicant and we are currently on the application page,
+  // it means a successful submission just happened.
+  if (currentApplicant && currentView === 'application') {
+    console.log("Applicant state ready. Navigating to payment...");
+    setCurrentView('payment');
+    window.location.hash = 'payment';
+  }
+}, [currentApplicant, currentView]);
 
   return (
     <div className="min-h-screen bg-gray-50">
