@@ -1,0 +1,5 @@
+{
+  "name": "Teacher Recruitment Portal",
+  "description": "A comprehensive teacher recruitment application portal featuring a responsive landing page, multi-step application form, PDF admit card generation, and a secure admin dashboard.",
+  "requestFramePermissions": []
+}
