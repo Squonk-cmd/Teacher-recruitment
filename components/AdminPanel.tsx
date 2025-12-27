@@ -14,7 +14,8 @@ import {
   X,
   User,
   Phone,
-  Briefcase
+  Briefcase,
+  ExternalLink // Add this one
 } from 'lucide-react';
 import { generateAdmitCardPDF } from '../services/AdmitCardGenerator';
 
@@ -60,9 +61,11 @@ const AdminPanel: React.FC = () => {
       id: (row.id || row.serial)?.toString(),
       name: row.name || "No Name",
       phone: row.phone || "No Phone",
+      nid: row.nid || "", // Added NID for searching
       applyFor: row.apply_for || row.applyFor || "N/A",
       selectedSubject: row.selected_subject || row.selectedSubject || "N/A",
       paymentStatus: row.payment_status || row.paymentStatus || "Pending",
+      cv_url: row.cv_url || row.cvUrl || null, // Ensure this is mapped!
       serial: row.serial || 0
     }));
 
@@ -107,7 +110,26 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const filteredApplicants = applicants;
+  const filteredApplicants = applicants.filter((applicant) => {
+  // 1. Search Term Filter (Name, Phone, or NID)
+  const searchLower = searchTerm.toLowerCase();
+  const matchesSearch = 
+    applicant.name.toLowerCase().includes(searchLower) ||
+    applicant.phone.includes(searchLower) ||
+    (applicant.nid && applicant.nid.includes(searchLower));
+
+  // 2. Role (Category) Filter
+  const matchesRole = 
+    roleFilter === 'All' || 
+    applicant.applyFor === roleFilter;
+
+  // 3. Subject (Specialization) Filter
+  const matchesSubject = 
+    subjectFilter === 'All' || 
+    applicant.selectedSubject === subjectFilter;
+
+  return matchesSearch && matchesRole && matchesSubject;
+});
 
   if (!isAuthenticated) {
     return (
@@ -279,6 +301,16 @@ const AdminPanel: React.FC = () => {
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* 1. View CV Button */}
+    {a.cv_url && (
+      <button 
+        onClick={() => window.open(a.cv_url, '_blank')}
+        className="p-3 bg-white border border-gray-100 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+        title="View CV"
+      >
+        <ExternalLink className="w-4 h-4" />
+      </button>
+    )}
                           <button 
                             onClick={() => generateAdmitCardPDF(a)}
                             className="p-3 bg-white border border-gray-100 text-brand rounded-xl hover:bg-brand hover:text-white transition-all shadow-sm"

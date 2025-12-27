@@ -33,6 +33,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(DIST_PATH));
 app.use(express.static(IMG));
 
