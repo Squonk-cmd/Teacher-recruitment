@@ -21,8 +21,10 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
     applyFor: '' as Position,
     selectedSubject: '' as Subject,
     cvName: '',
+    photoName: '', // Add this
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null); // Add this
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -39,6 +41,20 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
       setCvFile(file); // Store the actual binary file
     } else {
       alert('Please upload a PDF or DOCX file.');
+    }
+  }
+};
+const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const validExtensions = ['jpg', 'jpeg', 'png'];
+    
+    if (validExtensions.includes(extension || '')) {
+      setFormData(prev => ({ ...prev, photoName: file.name }));
+      setPhotoFile(file);
+    } else {
+      alert('Please upload a valid image (JPG or PNG).');
     }
   }
 };
@@ -67,6 +83,10 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
   if (cvFile) {
     data.append('cv', cvFile);
   }
+  // Append Photo (Ensure the key 'photo' matches your backend upload.single or upload.fields)
+  if (photoFile) {
+    data.append('photo', photoFile);
+  }
 
   try {
     const response = await fetch('http://localhost:5000/api/apply', {
@@ -77,7 +97,20 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
     if (!response.ok) throw new Error('Network response was not ok');
 
     const result = await response.json();
-    onSubmit(result.data); 
+
+    // MAP THE DATA HERE before sending it to the success screen/PDF generator
+  const formattedApplicant = {
+    ...result.data,
+    // Ensure 'photo' contains the full URL for the PDF generator
+    photo: result.data.photo_url 
+      ? `http://localhost:5000/uploads/${result.data.photo_url}` 
+      : null,
+    // Do the same for CV if needed
+    cv_url: result.data.cv_url 
+      ? `http://localhost:5000/uploads/${result.data.cv_url}` 
+      : null,
+  };
+    onSubmit(formattedApplicant); 
   } catch (error) {
     console.error("Submission Error:", error);
     alert("Error saving application.");
@@ -188,22 +221,36 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
             )}
           </div>
 
-          <div className="mt-8 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative group">
-            <input 
-              type="file" 
-              required 
-              onChange={handleFileChange}
-              accept=".pdf,.docx"
-              className="absolute inset-0 opacity-0 cursor-pointer" 
-            />
-            <div className="flex flex-col items-center">
-              <Upload className="w-12 h-12 text-gray-400 mb-3 group-hover:text-brand transition-colors" />
-              <p className="text-gray-600 font-medium">
-                {formData.cvName || 'Upload your CV (PDF or DOCX)'}
-              </p>
-              <p className="text-gray-400 text-sm mt-1">Maximum file size: 5MB</p>
-            </div>
-          </div>
+          {/* Photo Upload Section */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {/* CV Upload (Existing) */}
+  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center bg-gray-50 relative group">
+    <input 
+      type="file" required onChange={handleFileChange} accept=".pdf,.docx"
+      className="absolute inset-0 opacity-0 cursor-pointer" 
+    />
+    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+    <p className="text-sm text-gray-600 truncate">{formData.cvName || 'Upload CV (PDF)'}</p>
+  </div>
+
+  {/* Photo Upload (New) */}
+  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center bg-gray-50 relative group">
+    <input 
+      type="file" required onChange={handlePhotoChange} accept="image/*"
+      className="absolute inset-0 opacity-0 cursor-pointer" 
+    />
+    {photoFile ? (
+      <img 
+        src={URL.createObjectURL(photoFile)} 
+        alt="Preview" 
+        className="w-12 h-12 mx-auto mb-2 rounded-full object-cover" 
+      />
+    ) : (
+      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+    )}
+    <p className="text-sm text-gray-600 truncate">{formData.photoName || 'Upload Passport Photo'}</p>
+  </div>
+</div>
 
           <button 
             type="submit" 

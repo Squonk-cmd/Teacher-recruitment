@@ -19,6 +19,7 @@ export interface Applicant {
   cvName: string;
   paymentStatus: PaymentStatus;
   createdAt: string;
+  photo?: string,
   cv_url?: string;
 }
 

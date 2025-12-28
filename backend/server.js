@@ -30,7 +30,11 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + '-' + file.originalname);
     }
 });
-const upload = multer({ storage });
+// 1. Update Multer to accept multiple specific fields
+const upload = multer({ storage }).fields([
+    { name: 'cv', maxCount: 1 },
+    { name: 'photo', maxCount: 1 }
+]);
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -45,23 +49,41 @@ app.get("/img/Niyog.jpg", (req, res)=>{
     res.sendFile(path.join(IMG, "Niyog.jpg"));
 })
 
+app.get("/img/Admit_Card.jpg", (req, res)=>{
+    res.sendFile(path.join(IMG, "Admit_Card.jpg"));
+})
+
 // THE ROUTE
-app.post('/api/apply', upload.single('cv'), async (req, res) => {
+// 2. Updated THE ROUTE
+app.post('/api/apply', upload, async (req, res) => {
     try {
         const { name, phone, email, address, nid, lastDegree, subject, applyFor, selectedSubject } = req.body;
-        const cvPath = req.file ? req.file.path : null;
+
+        // Access files via req.files[fieldName]
+        // Note: We use .filename if you followed the previous advice for static serving, 
+        // or .path if you prefer the relative system path.
+        const cvPath = req.files['cv'] ? req.files['cv'][0].filename : null;
+        const photoPath = req.files['photo'] ? req.files['photo'][0].filename : null;
 
         const query = `
-            INSERT INTO applicants (name, phone, email, address, nid, last_degree, subject, apply_for, selected_subject, cv_url)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
+            INSERT INTO applicants (
+                name, phone, email, address, nid, last_degree, 
+                subject, apply_for, selected_subject, cv_url, photo_url
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            RETURNING *`;
         
-        const values = [name, phone, email, address, nid, lastDegree, subject, applyFor, selectedSubject, cvPath];
+        const values = [
+            name, phone, email, address, nid, lastDegree, 
+            subject, applyFor, selectedSubject, cvPath, photoPath
+        ];
+
         const result = await pool.query(query, values);
         
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Database error" });
+        console.error("Upload Error:", err);
+        res.status(500).json({ error: "Database error during registration" });
     }
 });
 

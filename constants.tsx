@@ -17,7 +17,7 @@ export const APP_CONFIG = {
     'Teacher Assistant': 200
   },
   // Background image for Admit Card PDF
-  admitCardBgUrl: 'img/Admit Card.jpg'
+  admitCardBgUrl: 'img/Admit_Card.jpg'
 };
 
 export const DEGREE_OPTIONS = ['HSC', 'Honors', 'Masters'];

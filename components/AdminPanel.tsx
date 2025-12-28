@@ -53,21 +53,35 @@ const AdminPanel: React.FC = () => {
     const response = await fetch('http://localhost:5000/api/applicants');
     const rawData = await response.json();
     
+    
     console.log("RAW DATA FROM DB:", rawData);
 
-    const formattedData = rawData.map((row: any) => ({
-      ...row,
-      // Map both styles (snake and camel) just to be 100% safe for the UI
-      id: (row.id || row.serial)?.toString(),
-      name: row.name || "No Name",
-      phone: row.phone || "No Phone",
-      nid: row.nid || "", // Added NID for searching
-      applyFor: row.apply_for || row.applyFor || "N/A",
-      selectedSubject: row.selected_subject || row.selectedSubject || "N/A",
-      paymentStatus: row.payment_status || row.paymentStatus || "Pending",
-      cv_url: row.cv_url || row.cvUrl || null, // Ensure this is mapped!
-      serial: row.serial || 0
-    }));
+    const formattedData = rawData.map((row: any) => {
+  // Use a fallback chain to find the image filename
+  const photoFileName = row.photo_url || row.photo_path || row.photo;
+  const cvFileName = row.cv_url || row.cv_path || row.cv;
+
+  return {
+    ...row,
+    id: (row.id ?? row.serial ?? Math.random()).toString(),
+    name: row.name || "No Name",
+    phone: row.phone || "No Phone",
+    nid: row.nid || "",
+    applyFor: row.apply_for || row.applyFor || "N/A",
+    selectedSubject: row.selected_subject || row.selectedSubject || "N/A",
+    paymentStatus: row.payment_status || row.paymentStatus || "Pending",
+    
+    // Construct full URLs
+    photo: photoFileName 
+      ? `http://localhost:5000/uploads/${photoFileName}` 
+      : null,
+    cv_url: cvFileName 
+      ? `http://localhost:5000/uploads/${cvFileName}` 
+      : null,
+      
+    serial: row.serial || 0
+  };
+});
 
     setApplicants(formattedData);
   } catch (error) {
@@ -265,20 +279,42 @@ const AdminPanel: React.FC = () => {
                     <tr key={a.id} className="group hover:bg-gray-50/50 transition-colors">
                       <td className="px-8 py-6">
                         <span className="font-mono text-xs font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded-full">
-                          #{a.serial.toString().padStart(4, '0')}
+                          #{ (a.serial ?? 0).toString().padStart(4, '0') }
                         </span>
                       </td>
                       <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-brand/5 text-brand rounded-full flex items-center justify-center font-black text-xs">
-                            {a.name.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="font-bold text-gray-900 group-hover:text-brand transition-colors">{a.name}</div>
-                            <div className="text-xs text-gray-500">{a.phone}</div>
-                          </div>
-                        </div>
-                      </td>
+  <div className="flex items-center gap-4">
+    {/* Profile Picture / Avatar logic */}
+    <div className="relative group/avatar">
+      {a.photo ? (
+        <img 
+          src={a.photo} 
+          alt={a.name}
+          className="w-12 h-12 rounded-2xl object-cover border-2 border-gray-100 shadow-sm group-hover/avatar:scale-110 transition-transform cursor-pointer"
+          onClick={() => window.open(a.photo, '_blank')}
+        />
+      ) : (
+        <div className="w-12 h-12 bg-brand/5 text-brand rounded-2xl flex items-center justify-center font-black text-sm border-2 border-brand/10">
+          {a.name.charAt(0)}
+        </div>
+      )}
+      
+      {/* Small indicator for status */}
+      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${a.paymentStatus === 'Approved' ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
+    </div>
+
+    <div>
+      <div className="font-bold text-gray-900 group-hover:text-brand transition-colors flex items-center gap-2">
+        {a.name}
+        {a.photo && <User className="w-3 h-3 text-gray-300" />}
+      </div>
+      <div className="text-xs text-gray-500 flex items-center gap-1">
+        <Phone className="w-3 h-3" />
+        {a.phone}
+      </div>
+    </div>
+  </div>
+</td>
                       <td className="px-8 py-6">
                         <div className="text-sm font-semibold text-gray-700">{a.applyFor}</div>
                         <div className="text-[10px] font-bold text-gray-400">
@@ -312,7 +348,7 @@ const AdminPanel: React.FC = () => {
       </button>
     )}
                           <button 
-                            onClick={() => generateAdmitCardPDF(a)}
+                            onClick={async () => await generateAdmitCardPDF(a)}
                             className="p-3 bg-white border border-gray-100 text-brand rounded-xl hover:bg-brand hover:text-white transition-all shadow-sm"
                             title="Admit Card"
                           >
