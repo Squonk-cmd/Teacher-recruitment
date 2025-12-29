@@ -27,7 +27,7 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = ({ applicant }) => {
   const handlePaymentClick = (e) => {
     e.preventDefault(); // Prevent form submission if inside a form
   const amountToPay = fee; // or get from state
-  bkashPaymentHandler(amountToPay);
+  bkashPaymentHandler(fee);
   };
 
   const bkashPaymentHandler = async (amount) => {

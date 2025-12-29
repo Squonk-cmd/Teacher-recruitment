@@ -44,25 +44,46 @@ const App: React.FC = () => {
     window.location.hash = 'application';
   };
 
-  // 1. The Submit Handler: Just update the state
+ // 1. Save data to localStorage when it arrives from the form
 const handleFormSubmit = (dataFromDb: any) => {
-  // Map snake_case to camelCase immediately
   const formatted = {
     ...dataFromDb,
     id: dataFromDb.id,
     applyFor: dataFromDb.apply_for || dataFromDb.applyFor,
     selectedSubject: dataFromDb.selected_subject || dataFromDb.selectedSubject,
     paymentStatus: dataFromDb.payment_status || dataFromDb.paymentStatus,
+    // CRITICAL: Ensure photo URL is mapped here
+    photo: dataFromDb.photo_url 
+      ? `http://localhost:5000/uploads/${dataFromDb.photo_url}` 
+      : null
   };
 
-  console.log("Setting Applicant state...", formatted);
   setCurrentApplicant(formatted);
-  // DO NOT set window.location.hash here.
+  // Persist the data so it survives the bKash redirect
+  localStorage.setItem('pending_applicant', JSON.stringify(formatted));
 };
+
+// 2. Retrieve data when the App loads (especially on payment success)
+useEffect(() => {
+  const saved = localStorage.getItem('pending_applicant');
+  if (saved && !currentApplicant) {
+    setCurrentApplicant(JSON.parse(saved));
+  }
+}, []);
 
  const handleDownloadAdmitCard = () => {
     generateAdmitCardPDF(currentApplicant);
   };
+
+
+  const handleGoHome = () => {
+  // Clear the temporary storage
+  localStorage.removeItem('pending_applicant');
+  // Reset the state
+  setCurrentApplicant(null);
+  // Navigate back to home
+  window.location.hash = '';
+};
 
 // 2. The Navigation Effect: Watch for the state change
 useEffect(() => {
@@ -99,7 +120,7 @@ useEffect(() => {
   </button>
 
   <button 
-    onClick={() => window.location.hash = ''} 
+    onClick={handleGoHome} // Use the function here
     className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-2xl font-bold transition-colors"
   >
     Back to Home
@@ -116,7 +137,7 @@ useEffect(() => {
             </div>
             <h1 className="text-3xl font-black text-gray-900 mb-2">Payment Failed</h1>
             <p className="text-gray-500 mb-8">Something went wrong with your transaction. Please try again or contact support.</p>
-            <button onClick={() => window.location.hash = 'payment'} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold">Try Again</button>
+            <button onClick={handleGoHome} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold">Try Again</button>
           </div>
         </div>
       )}

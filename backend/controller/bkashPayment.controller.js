@@ -66,13 +66,17 @@ const bkashCallback = async (req, res) => {
 
         // Your frontend success route
         return res.redirect(
-          `${bkashConfig.frontend_success_url}?data=${result.statusMessage}`
+          `${bkashConfig.frontend_success_url}`
         );
       } else {
         console.log("Payment Failed !!!");
 
         return res.redirect(bkashConfig.frontend_fail_url);
       }
+    } else{
+      console.log("Payment Failed !!!");
+
+        return res.redirect(bkashConfig.frontend_fail_url);
     }
   } catch (e) {
     console.log("Payment Failed !!!");

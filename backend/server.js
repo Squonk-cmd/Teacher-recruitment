@@ -132,4 +132,38 @@ app.put('/api/applicants/:id', async (req, res) => {
     }
 });
 
+
+app.get('/api/bkash/refund-check', async (req, res) => {
+  try {
+    const dbResult = await pool.query(
+      "SELECT id_token, expires_at FROM bkash_tokens ORDER BY id DESC LIMIT 1"
+    );
+
+    if (dbResult.rows.length === 0) {
+      return res.status(404).json({ 
+        status: "fail", 
+        message: "No token found in database." 
+      });
+    }
+
+    const tokenData = dbResult.rows[0];
+    const currentTime = new Date();
+    const expiryTime = new Date(tokenData.expires_at);
+    
+    // Calculate remaining time in minutes
+    const remainingMinutes = Math.round((expiryTime - currentTime) / 60000);
+
+    res.json({
+      status: "success",
+      token: tokenData.id_token,
+      expires_at: tokenData.expires_at,
+      is_valid: expiryTime > currentTime,
+      minutes_remaining: remainingMinutes > 0 ? remainingMinutes : 0
+    });
+  } catch (error) {
+    console.error("Token Check Error:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+});
+
 app.listen(5000, () => console.log('Server running on http://localhost:5000'));
