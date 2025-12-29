@@ -1,0 +1,13 @@
+{
+  "grant_token_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
+  "refresh_token_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/refresh",
+  "create_payment_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/create",
+  "execute_payment_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/execute",
+  "backend_callback_url": "http://localhost:5000/api/bkash/callback",
+  "frontend_success_url": "http://localhost:5000/payment-success",
+  "frontend_fail_url": "http://localhost:5000/payment-fail",
+  "username": "01770618567",
+  "password": "D7DaC<*E*eG",
+  "app_key": "0vWQuCRGiUX7EPVjQDr0EUAYtc",
+  "app_secret": "jcUNPBgbcqEDedNKdvE4G1cAK7D3hCjmJccNPZZBq96QIxxwAMEx"
+}

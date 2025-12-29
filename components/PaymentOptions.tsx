@@ -4,7 +4,7 @@ import { Applicant } from '../types';
 import { APP_CONFIG } from '../constants';
 import { ExternalLink, CheckCircle2, FileText, Download, Wallet } from 'lucide-react';
 import { generateAdmitCardPDF } from '../services/AdmitCardGenerator';
-
+import axios from "axios";
 interface PaymentOptionsProps {
   applicant: Applicant;
 }
@@ -24,13 +24,24 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = ({ applicant }) => {
     console.log("Available keys in CONFIG:", Object.keys(APP_CONFIG.fees));
   }
 
-  const handlePaymentClick = () => {
-    // Open payment link in new window
-    window.open(APP_CONFIG.paymentLink, '_blank');
-    // For demo purposes, we'll allow showing the "Download" button after a few seconds
-    setTimeout(() => {
-      setPaymentDone(true);
-    }, 2000);
+  const handlePaymentClick = (e) => {
+    e.preventDefault(); // Prevent form submission if inside a form
+  const amountToPay = fee; // or get from state
+  bkashPaymentHandler(amountToPay);
+  };
+
+  const bkashPaymentHandler = async (amount) => {
+    try {
+      const result = await axios.post("http://localhost:5000/api/bkash/create", {amount});
+
+      if (result?.data?.status) {
+        window.location.href = result?.data?.data?.data?.bkashURL;
+      } else {
+        console.error("Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleDownloadAdmitCard = () => {

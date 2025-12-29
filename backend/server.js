@@ -3,11 +3,14 @@ const multer = require('multer');
 const cors = require('cors');
 const { Pool } = require('pg');
 const path = require('path');
+const bkashPaymentRoute = require("./routes/bkashPayment.routes");
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/bkash", bkashPaymentRoute);
 
 
 // Path to Vite build output
