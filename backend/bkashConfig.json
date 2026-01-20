@@ -1,13 +1,13 @@
 {
-  "grant_token_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
-  "refresh_token_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/refresh",
-  "create_payment_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/create",
-  "execute_payment_url": "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/execute",
-  "backend_callback_url": "http://localhost:5000/api/bkash/callback",
-  "frontend_success_url": "http://localhost:5000/#payment-success",
-  "frontend_fail_url": "http://localhost:5000/#payment-failure",
-  "username": "01770618567",
-  "password": "D7DaC<*E*eG",
-  "app_key": "0vWQuCRGiUX7EPVjQDr0EUAYtc",
-  "app_secret": "jcUNPBgbcqEDedNKdvE4G1cAK7D3hCjmJccNPZZBq96QIxxwAMEx"
+  "grant_token_url": "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
+  "refresh_token_url": "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/refresh",
+  "create_payment_url": "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create",
+  "execute_payment_url": "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/execute",
+  "backend_callback_url": "https://ukacollegiate.school/api/bkash/callback",
+  "frontend_success_url": "https://ukacollegiate.school/#payment-success",
+  "frontend_fail_url": "https://ukacollegiate.school/#payment-failure",
+  "username": "01407063430",
+  "password": "1hYIP_Z?vT6",
+  "app_key": "FF0NazBTifWQS9cEHSFkcUSMtc",
+  "app_secret": "egUkyZzbtk446ZtHYkIkPpTiDA6kQshFJl2LhrEg6pJQHW64SBoy"
 }

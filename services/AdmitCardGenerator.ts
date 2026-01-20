@@ -44,7 +44,7 @@ export const generateAdmitCardPDF = async (applicant: Applicant) => {
       const photoWidth = 35;
       const photoHeight = 40;
       const photoX = pageWidth - photoWidth - 15;
-      const photoY = 35;
+      const photoY = 60;
 
       // Draw photo
       doc.addImage(img, 'JPEG', photoX, photoY, photoWidth, photoHeight, undefined, 'FAST');
@@ -62,16 +62,14 @@ export const generateAdmitCardPDF = async (applicant: Applicant) => {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
   doc.setTextColor(25, 112, 117);
-  doc.text('TEACHER NIYOG EXAM', pageWidth/4 + 10, 35); 
+  doc.text('TEACHER RECRUITMENT EXAM', pageWidth / 2, 40, { align: 'center' }); 
 
   doc.setFontSize(9);
   doc.setTextColor(80);
   const instructions = [
-    'Mandatory for entry into the exam hall.',
-    'Bring original National ID for verification.',
-    'Reporting time: 30 mins before exam.'
+    'Admit Card will be available to download on ukacollegiate.school from 21 January 2026.'
   ];
-  instructions.forEach((line, i) => doc.text(line, 15, 43 + (i * 5)));
+  instructions.forEach((line, i) => doc.text(line, pageWidth / 2, (pageHeight / 2) - 25, { align: 'center' }));
 
   // Applicant Info
   doc.setTextColor(20);
@@ -100,7 +98,6 @@ export const generateAdmitCardPDF = async (applicant: Applicant) => {
   // Footer
   doc.setFontSize(8);
   doc.setTextColor(120);
-  doc.text('Valid for 2026 Recruitment Session', pageWidth / 2, cardHeight - 10, { align: 'center' });
 
   doc.save(`AdmitCard_${applicant.serial}_${applicant.name.split(' ')[0]}.pdf`);
 };

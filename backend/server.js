@@ -55,7 +55,9 @@ app.get("/img/Niyog.jpg", (req, res)=>{
 app.get("/img/Admit_Card.jpg", (req, res)=>{
     res.sendFile(path.join(IMG, "Admit_Card.jpg"));
 })
-
+app.get("/img/UKA_logo.png", (req, res)=>{
+    res.sendFile(path.join(IMG, "UKA_logo.png"));
+})
 // THE ROUTE
 // 2. Updated THE ROUTE
 app.post('/api/apply', upload, async (req, res) => {
@@ -131,7 +133,16 @@ app.put('/api/applicants/:id', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
-
+// Example Backend Route
+app.delete('/api/applicants/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM applicants WHERE id = $1', [id]);
+    res.status(200).send('Deleted successfully');
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
 
 app.get('/api/bkash/refund-check', async (req, res) => {
   try {

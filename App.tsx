@@ -54,7 +54,7 @@ const handleFormSubmit = (dataFromDb: any) => {
     paymentStatus: dataFromDb.payment_status || dataFromDb.paymentStatus,
     // CRITICAL: Ensure photo URL is mapped here
     photo: dataFromDb.photo_url 
-      ? `http://localhost:5000/uploads/${dataFromDb.photo_url}` 
+      ? `https://ukacollegiate.school/uploads/${dataFromDb.photo_url}` 
       : null
   };
 

@@ -20,6 +20,6 @@ export const APP_CONFIG = {
   admitCardBgUrl: 'img/Admit_Card.jpg'
 };
 
-export const DEGREE_OPTIONS = ['HSC', 'Honors', 'Masters'];
+export const DEGREE_OPTIONS = ['HSC/Alim', 'Honors/Fazil', 'Masters/Kamil'];
 export const POSITION_OPTIONS = ['Assistant Teacher', 'Teacher Assistant'] as const;
 export const SUBJECT_OPTIONS = ['Bangla', 'English', 'Arabic', 'Mathematics', 'Social Science', 'Art & Culture'];

@@ -15,7 +15,8 @@ import {
   User,
   Phone,
   Briefcase,
-  ExternalLink // Add this one
+  ExternalLink, // Add this one
+  Trash2
 } from 'lucide-react';
 import { generateAdmitCardPDF } from '../services/AdmitCardGenerator';
 
@@ -39,7 +40,7 @@ const AdminPanel: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') {
+    if (password === 'abcdwxyz634') {
       setIsAuthenticated(true);
     } else {
       alert('Invalid admin credentials.');
@@ -50,7 +51,7 @@ const AdminPanel: React.FC = () => {
   const refreshData = async () => {
   console.log("FETCH START: Requesting data from server...");
   try {
-    const response = await fetch('http://localhost:5000/api/applicants');
+    const response = await fetch('https://ukacollegiate.school/api/applicants');
     const rawData = await response.json();
     
     
@@ -73,10 +74,10 @@ const AdminPanel: React.FC = () => {
     
     // Construct full URLs
     photo: photoFileName 
-      ? `http://localhost:5000/uploads/${photoFileName}` 
+      ? `https://ukacollegiate.school/uploads/${photoFileName}` 
       : null,
     cv_url: cvFileName 
-      ? `http://localhost:5000/uploads/${cvFileName}` 
+      ? `https://ukacollegiate.school/uploads/${cvFileName}` 
       : null,
       
     serial: row.serial || 0
@@ -92,7 +93,7 @@ const AdminPanel: React.FC = () => {
   // 2. Handle Status Update (Payment)
   const handleStatusUpdate = async (id: string | number, status: string) => {
     try {
-      await fetch(`http://localhost:5000/api/applicants/${id}/status`, {
+      await fetch(`https://ukacollegiate.school/api/applicants/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentStatus: status })
@@ -108,7 +109,7 @@ const AdminPanel: React.FC = () => {
     e.preventDefault();
     if (editingApplicant) {
       try {
-        const response = await fetch(`http://localhost:5000/api/applicants/${editingApplicant.id}`, {
+        const response = await fetch(`https://ukacollegiate.school/api/applicants/${editingApplicant.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(editingApplicant)
@@ -123,7 +124,31 @@ const AdminPanel: React.FC = () => {
       }
     }
   };
+	// 4. Handle Delete Applicant
+const handleDelete = async (id: string | number, name: string) => {
+  // Always ask for confirmation before deleting
+  const confirmed = window.confirm(`Are you sure you want to delete the record for ${name}? This action cannot be undone.`);
+  
+  if (confirmed) {
+    try {
+      const response = await fetch(`https://ukacollegiate.school/api/applicants/${id}`, {
+        method: 'DELETE',
+      });
 
+      if (response.ok) {
+        // Option 1: Refresh everything from DB
+        refreshData(); 
+        // Option 2: Local state filter (faster UI feel)
+        // setApplicants(applicants.filter(a => a.id !== id));
+      } else {
+        alert("Failed to delete the record.");
+      }
+    } catch (error) {
+      console.error("DELETE ERROR:", error);
+      alert("Error connecting to the server.");
+    }
+  }
+};
   const filteredApplicants = applicants.filter((applicant) => {
   // 1. Search Term Filter (Name, Phone, or NID)
   const searchLower = searchTerm.toLowerCase();
@@ -279,7 +304,7 @@ const AdminPanel: React.FC = () => {
                     <tr key={a.id} className="group hover:bg-gray-50/50 transition-colors">
                       <td className="px-8 py-6">
                         <span className="font-mono text-xs font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded-full">
-                          #{ (a.serial ?? 0).toString().padStart(4, '0') }
+                          #{ (a.id ?? 0).toString().padStart(4, '0') }
                         </span>
                       </td>
                       <td className="px-8 py-6">
@@ -361,6 +386,14 @@ const AdminPanel: React.FC = () => {
                           >
                             <Edit className="w-4 h-4" />
                           </button>
+			{/* NEW: Delete Button */}
+    <button 
+      onClick={() => handleDelete(a.id, a.name)}
+      className="p-3 bg-white border border-gray-100 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+      title="Delete Applicant"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
                         </div>
                       </td>
                     </tr>

@@ -89,7 +89,7 @@ const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 
   try {
-    const response = await fetch('http://localhost:5000/api/apply', {
+    const response = await fetch('https://ukacollegiate.school/api/apply', {
       method: 'POST',
       body: data, // Note: Do NOT set Content-Type header; fetch does it automatically for FormData
     });
@@ -103,11 +103,11 @@ const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     ...result.data,
     // Ensure 'photo' contains the full URL for the PDF generator
     photo: result.data.photo_url 
-      ? `http://localhost:5000/uploads/${result.data.photo_url}` 
+      ? `https://ukacollegiate.school/uploads/${result.data.photo_url}` 
       : null,
     // Do the same for CV if needed
     cv_url: result.data.cv_url 
-      ? `http://localhost:5000/uploads/${result.data.cv_url}` 
+      ? `https://ukacollegiate.school/uploads/${result.data.cv_url}` 
       : null,
   };
     onSubmit(formattedApplicant); 

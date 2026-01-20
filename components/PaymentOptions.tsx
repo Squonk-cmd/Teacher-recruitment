@@ -32,7 +32,7 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = ({ applicant }) => {
 
   const bkashPaymentHandler = async (amount) => {
     try {
-      const result = await axios.post("http://localhost:5000/api/bkash/create", {amount});
+      const result = await axios.post("https://ukacollegiate.school/api/bkash/create", {amount});
 
       if (result?.data?.status) {
         window.location.href = result?.data?.data?.data?.bkashURL;
